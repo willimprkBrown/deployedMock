@@ -25,7 +25,7 @@ export function REPLInput(props: REPLInputProps) {
   var csvString: string[] = [];
   var stringList: string[] = commandString.split(" ");
 
-  const [load_file, setLoadFile] = useState<string>("exampleCSV1");
+  const [load_file, setLoadFile] = useState<string>();
 
   csvMap.set("exampleCSV1", exampleCSV1);
   csvMap.set("income_by_race", income_by_race);
@@ -44,14 +44,16 @@ export function REPLInput(props: REPLInputProps) {
 
   function view(): REPLFunction {
     return (args: string[]): String | String[][] => {
-      const csv = csvMap.get(load_file);
-      if (csv) {
-        let rowString: string[] = [];
-        csv.forEach((row, index) => {
-          rowString.push(`Row ${index + 1}: ${row.join(", ")}`);
-        });
-        csvString = rowString;
-        resultString = "Currently viewing loaded CSV";
+      if (load_file) {
+        const csv = csvMap.get(load_file);
+        if (csv) {
+          let rowString: string[] = [];
+          csv.forEach((row, index) => {
+            rowString.push(`Row ${index + 1}: ${row.join(", ")}`);
+          });
+          csvString = rowString;
+          resultString = "Currently viewing loaded CSV";
+        }
       } else {
         resultString = "No file loaded";
       }
@@ -61,19 +63,23 @@ export function REPLInput(props: REPLInputProps) {
 
   function search(): REPLFunction {
     return (args: string[]): String | String[][] => {
-      const csv = csvMap.get(load_file);
-      if (csv) {
-        var rowsWithValue: string[] = []; //search col value
-        csv.forEach((row, index) => {
-          if (row[Number(args[0])] == args[1]) {
-            rowsWithValue.push(row.join(", "));
-          }
-        });
-        csvString = rowsWithValue;
-        resultString =
-          "Values found in the following row(s): " + rowsWithValue.toString();
+      if (load_file) {
+        const csv = csvMap.get(load_file);
+        if (csv) {
+          var rowsWithValue: string[] = []; //search col value
+          csv.forEach((row, index) => {
+            if (row[Number(args[0])] == args[1]) {
+              rowsWithValue.push(row.join(", "));
+            }
+          });
+          csvString = rowsWithValue;
+          resultString =
+            "Values found in the following row(s): " + rowsWithValue.toString();
+        } else {
+          resultString = "File not found";
+        }
       } else {
-        resultString = "File not found";
+        resultString = "No file loaded";
       }
       return resultString;
     };
