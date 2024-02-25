@@ -2,12 +2,12 @@ import { Dispatch, SetStateAction, useState } from "react";
 import "../styles/main.css";
 import { ControlledInput } from "./ControlledInput";
 import { REPLFunction } from "./REPLFunction";
+import { exampleCSV1, income_by_race } from "./mockedData";
 
 interface REPLInputProps {
   // TODO: Fill this with desired props... Maybe something to keep track of the submitted commands
   // CHANGED
   history: string[];
-  functionMap: Map<String, Function>;
   setHistory: Dispatch<SetStateAction<string[]>>;
 }
 // You can use a custom interface or explicit fields or both! An alternative to the current function header might be:
@@ -19,76 +19,104 @@ export function REPLInput(props: REPLInputProps) {
   // TODO WITH TA : add a count state
   const [count, setCount] = useState<number>(0);
   const [mode, setMode] = useState<string>("brief"); // true = brief, false = verbose
-  const [functionMap, addFunction] = useState<Map<String, Function>>(new Map());
+  // const [functionMap, addFunction] = useState<Map<String, REPLFunction>>(
+  //   new Map()
+  // );
+  var functionMap: Map<String, () => REPLFunction> = new Map();
+  var csvMap: Map<String, (string[] | number[])[]> = new Map();
+  var resultString: string = "";
+  var csvString: string[] = [];
+  var stringList: string[] = commandString.split(" ");
 
-  const [load_file, setLoadFile] = useState<string>("");
-  const [commandNames, addCommand] = useState<Array<string>>([]);
+  const [load_file, setLoadFile] = useState<string>("exampleCSV1");
 
-  const exampleCSV1 = [
-    [1, 2, 3, 4, 5],
-    ["The", "song", "remains", "the", "same."],
-  ];
+  csvMap.set("exampleCSV1", exampleCSV1);
+  csvMap.set("income_by_race", income_by_race);
 
-  function createFunction(func: Function, name: String) {
-    addFunction(functionMap.set(name, func));
-  }
+  functionMap.set("boo", boo);
+  functionMap.set("mode", changeMode);
+  functionMap.set("view", view);
+  functionMap.set("search", search);
+  functionMap.set("load_file", loadFile);
 
   function boo(): REPLFunction {
-    props.setHistory([...props.history, "boo"]);
-    commandNames.unshift("boo");
     return (args: string[]): String | String[][] => {
       return "boo";
     };
   }
 
-  createFunction(boo, "boo");
+  function view(): REPLFunction {
+    return (args: string[]): String | String[][] => {
+      const csv = csvMap.get(load_file);
+      if (csv) {
+        let rowString: string[] = [];
+        csv.forEach((row, index) => {
+          rowString.push(`Row ${index + 1}: ${row.join(", ")}`);
+        });
+        csvString = rowString;
+        resultString = "Currently viewing loaded CSV";
+      }
+      return resultString;
+    };
+  }
+
+  function search(): REPLFunction {
+    return (args: string[]): String | String[][] => {
+      const csv = csvMap.get(load_file);
+      if (csv) {
+        var rowsWithValue: string[] = []; //search col value
+        csv.forEach((row, index) => {
+          if (row[Number(args[0])] == args[1]) {
+            rowsWithValue.push(row.join(", "));
+          }
+        });
+        csvString = rowsWithValue;
+        resultString =
+          "Values found in the following row(s): " + rowsWithValue.toString();
+      } else {
+        resultString = "File not found";
+      }
+      return resultString;
+    };
+  }
+
+  function loadFile(): REPLFunction {
+    return (args: string[]): String | String[][] => {
+      if (args.length >= 1) {
+        setLoadFile(args[0]);
+        resultString = "result: loaded file: " + stringList[1];
+      } else {
+        resultString = "result: No file given";
+      }
+      return resultString;
+    };
+  }
+
+  function changeMode(): REPLFunction {
+    return (args: string[]): String | String[][] => {
+      let modeString = mode;
+      if (commandString == "mode") {
+        if (mode == "brief") {
+          modeString = "verbose";
+        } else {
+          modeString = "brief";
+        }
+        setMode(modeString);
+        resultString = "result: mode changed to " + modeString;
+      }
+      return resultString;
+    };
+  }
 
   // This function is triggered when the button is clicked.
   function handleSubmit(commandString: string) {
-    let resultString = "";
-    let modeString = mode;
     setCount(count + 1);
-    if (commandString == "mode") {
-      if (mode == "brief") {
-        modeString = "verbose";
-      } else {
-        modeString = "brief";
-      }
-      setMode(modeString);
-      resultString = "result: mode changed to " + modeString;
+    const func = functionMap.get(stringList[0]);
+
+    if (func) {
+      resultString = func()(stringList.slice(1)).toString();
     }
 
-    var stringList: string[] = commandString.split(" ");
-    if (stringList[0] == "load_file") {
-      if (stringList.length > 1) {
-        setLoadFile(stringList[1]);
-        resultString = "result: loaded file: " + stringList[1];
-      } else {
-        setLoadFile("");
-        resultString = "result: No file given";
-      }
-    }
-
-    // CHANGED
-    if (commandString === "view") {
-      let rowString = "";
-      exampleCSV1.forEach((row, index) => {
-        rowString = `Row ${index + 1}: ${row.join(", ")}`;
-        props.setHistory([...props.history, rowString]);
-      });
-      resultString = "Currently viewing loaded CSV";
-    }
-
-    var rowsWithValue: any[][] = []; //search col value
-    if (stringList[0] == "search") {
-      exampleCSV1.forEach((row, index) => {
-        if (row[Number(stringList[1])] == stringList[2]) {
-          rowsWithValue.unshift(row);
-        }
-      });
-      resultString =
-        "Values found in the following row(s): " + rowsWithValue.toString();
-    }
     if (mode == "brief") {
       if (resultString == "") {
         props.setHistory([
@@ -96,7 +124,11 @@ export function REPLInput(props: REPLInputProps) {
           "invalid command: " + commandString,
         ]);
       } else {
-        props.setHistory([...props.history, resultString]);
+        if (commandString == "view" || commandString == "search") {
+          props.setHistory([...props.history, resultString, ...csvString]);
+        } else {
+          props.setHistory([...props.history, resultString]);
+        }
       }
     } else {
       if (resultString == "") {
@@ -106,7 +138,16 @@ export function REPLInput(props: REPLInputProps) {
           "invalid command: " + commandString,
         ]);
       } else {
-        props.setHistory([...props.history, commandString, resultString]);
+        if (commandString == "view" || commandString == "search") {
+          props.setHistory([
+            ...props.history,
+            commandString,
+            resultString,
+            ...csvString,
+          ]);
+        } else {
+          props.setHistory([...props.history, commandString, resultString]);
+        }
       }
     }
     setCommandString("");
