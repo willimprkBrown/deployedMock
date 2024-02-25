@@ -19,9 +19,6 @@ export function REPLInput(props: REPLInputProps) {
   // TODO WITH TA : add a count state
   const [count, setCount] = useState<number>(0);
   const [mode, setMode] = useState<string>("brief"); // true = brief, false = verbose
-  // const [functionMap, addFunction] = useState<Map<String, REPLFunction>>(
-  //   new Map()
-  // );
   var functionMap: Map<String, () => REPLFunction> = new Map();
   var csvMap: Map<String, (string[] | number[])[]> = new Map();
   var resultString: string = "";
@@ -55,6 +52,8 @@ export function REPLInput(props: REPLInputProps) {
         });
         csvString = rowString;
         resultString = "Currently viewing loaded CSV";
+      } else {
+        resultString = "No file loaded";
       }
       return resultString;
     };
