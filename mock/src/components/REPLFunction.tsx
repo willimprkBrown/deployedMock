@@ -8,7 +8,3 @@
 export interface REPLFunction {
   (args: Array<string>): String | String[][];
 }
-
-export function createFunction(func: Function, name: String) {
-  func;
-}

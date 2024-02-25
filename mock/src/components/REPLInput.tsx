@@ -1,11 +1,13 @@
 import { Dispatch, SetStateAction, useState } from "react";
 import "../styles/main.css";
 import { ControlledInput } from "./ControlledInput";
+import { REPLFunction } from "./REPLFunction";
 
 interface REPLInputProps {
   // TODO: Fill this with desired props... Maybe something to keep track of the submitted commands
   // CHANGED
   history: string[];
+  functionMap: Map<String, Function>;
   setHistory: Dispatch<SetStateAction<string[]>>;
 }
 // You can use a custom interface or explicit fields or both! An alternative to the current function header might be:
@@ -17,13 +19,29 @@ export function REPLInput(props: REPLInputProps) {
   // TODO WITH TA : add a count state
   const [count, setCount] = useState<number>(0);
   const [mode, setMode] = useState<string>("brief"); // true = brief, false = verbose
+  const [functionMap, addFunction] = useState<Map<String, Function>>(new Map());
 
   const [load_file, setLoadFile] = useState<string>("");
+  const [commandNames, addCommand] = useState<Array<string>>([]);
 
   const exampleCSV1 = [
     [1, 2, 3, 4, 5],
     ["The", "song", "remains", "the", "same."],
   ];
+
+  function createFunction(func: Function, name: String) {
+    addFunction(functionMap.set(name, func));
+  }
+
+  function boo(): REPLFunction {
+    props.setHistory([...props.history, "boo"]);
+    commandNames.unshift("boo");
+    return (args: string[]): String | String[][] => {
+      return "boo";
+    };
+  }
+
+  createFunction(boo, "boo");
 
   // This function is triggered when the button is clicked.
   function handleSubmit(commandString: string) {

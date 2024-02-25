@@ -20,6 +20,18 @@ export default function REPL() {
     [1, 2, 3, 4, 5],
     ["The", "song", "remains", "the", "same."],
   ];
+  const [functionMap, addFunction] = useState<Map<String, Function>>(new Map());
+
+  function createFunction(func: Function, name: String) {
+    addFunction(functionMap.set(name, func));
+  }
+
+  // createFunction(boo, "boo");
+
+  function boo() {
+    setHistory([...history, "boo"]);
+    //return "boo";
+  }
 
   return (
     <div className="repl">
@@ -28,7 +40,11 @@ export default function REPL() {
       <REPLHistory history={history} />
       <hr></hr>
       {/* CHANGED */}
-      <REPLInput history={history} setHistory={setHistory} />
+      <REPLInput
+        history={history}
+        setHistory={setHistory}
+        functionMap={functionMap}
+      />
     </div>
   );
 }
