@@ -16,10 +16,6 @@ export default function REPL() {
   // TODO: Add some kind of shared state that holds all the commands submitted.
   // CHANGED
   const [history, setHistory] = useState<string[]>([]);
-  const exampleCSV1 = [
-    [1, 2, 3, 4, 5],
-    ["The", "song", "remains", "the", "same."],
-  ];
 
   return (
     <div className="repl">
@@ -27,7 +23,6 @@ export default function REPL() {
       component or somewhere else depending on your component organization. What are the pros and cons of each? */}
       <REPLHistory history={history} />
       <hr></hr>
-      {/* CHANGED */}
       <REPLInput history={history} setHistory={setHistory} />
     </div>
   );

@@ -144,7 +144,7 @@ test("my view command outputs the loaded file if file was loaded", async ({
     return history?.children[1]?.textContent;
   });
   expect(firstChild).toEqual("result: loaded file: exampleCSV1");
-  expect(secondChild).toEqual("Currently viewing loaded csv");
+  expect(secondChild).toEqual("Currently viewing loaded CSV");
 });
 
 test("after I search for a file that doesn't exist, it outputs an error message", async ({
