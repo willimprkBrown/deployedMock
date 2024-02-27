@@ -16,7 +16,7 @@ export function REPLInput(props: REPLInputProps) {
   // Manages the contents of the input box
   const [commandString, setCommandString] = useState<string>("");
   const [count, setCount] = useState<number>(0);
-  const [mode, setMode] = useState<string>("brief"); // true = brief, false = verbose
+  const [mode, setMode] = useState<string>("brief");
   var functionMap: Map<String, () => REPLFunction> = new Map();
   var csvMap: Map<String, (string[] | number[])[]> = new Map();
   var resultString: string = "";
@@ -68,16 +68,20 @@ export function REPLInput(props: REPLInputProps) {
         const csv = csvMap.get(load_file);
         if (csv) {
           var rowsWithValue: string[] = [];
-          if (args.length < 2) {
+          if (args.length == 2) {
             csv.forEach((row, index) => {
               if (row[Number(args[0])] == args[1]) {
                 rowsWithValue.push(row.join(", "));
               }
             });
             csvString = rowsWithValue;
-            resultString =
-              "Values found in the following row(s): " +
-              rowsWithValue.toString();
+            if (rowsWithValue.length != 0) {
+              resultString =
+                "Values found in the following row(s): " +
+                rowsWithValue.toString();
+            } else {
+              resultString = "No values found with given parameters";
+            }
           } else {
             resultString = "Proper arguments not found";
           }
@@ -95,11 +99,15 @@ export function REPLInput(props: REPLInputProps) {
    * @return REPLFunction */
   function loadFile(): REPLFunction {
     return (args: string[]): String | String[][] => {
-      if (args.length >= 1) {
-        setLoadFile(args[0]);
-        resultString = "result: loaded file: " + stringList[1];
+      if (args.length == 1) {
+        if (csvMap.has(args[0])) {
+          setLoadFile(args[0]);
+          resultString = "Loaded file: " + stringList[1];
+        } else {
+          resultString = "File not found";
+        }
       } else {
-        resultString = "result: No file given";
+        resultString = "Proper arguments not found";
       }
       return resultString;
     };
@@ -117,7 +125,7 @@ export function REPLInput(props: REPLInputProps) {
           modeString = "brief";
         }
         setMode(modeString);
-        resultString = "result: mode changed to " + modeString;
+        resultString = "Mode changed to " + modeString;
       }
       return resultString;
     };
@@ -140,9 +148,13 @@ export function REPLInput(props: REPLInputProps) {
         ]);
       } else {
         if (commandString == "view" || commandString == "search") {
-          props.setHistory([...props.history, resultString, ...csvString]);
+          props.setHistory([
+            ...props.history,
+            "Result: " + resultString,
+            ...csvString,
+          ]);
         } else {
-          props.setHistory([...props.history, resultString]);
+          props.setHistory([...props.history, "Result: " + resultString]);
         }
       }
     } else {
@@ -157,11 +169,15 @@ export function REPLInput(props: REPLInputProps) {
           props.setHistory([
             ...props.history,
             commandString,
-            resultString,
+            "Result: " + resultString,
             ...csvString,
           ]);
         } else {
-          props.setHistory([...props.history, commandString, resultString]);
+          props.setHistory([
+            ...props.history,
+            commandString,
+            "Result: " + resultString,
+          ]);
         }
       }
     }
