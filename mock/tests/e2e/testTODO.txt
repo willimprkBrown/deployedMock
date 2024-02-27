@@ -13,5 +13,10 @@
 
 +mode success
 +mode success consectuive
+mode success with load_file
 
 +boo success
+
+load_file viewfile mode loadfile viewfile mode searchfile mode searchfile
+
+load_file load_file viewfile

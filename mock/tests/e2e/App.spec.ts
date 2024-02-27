@@ -152,10 +152,13 @@ test("search works when the desired value is in the desired column", async ({
     const history = document.querySelector(".repl-history");
     return history?.children[1]?.textContent;
   });
+  const thirdChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[2]?.textContent;
+  });
   expect(firstChild).toEqual("Result: Loaded file: exampleCSV1");
-  expect(secondChild).toEqual(
-    "Result: Values found in the following row(s): 1, 2, 3, 4, 5"
-  );
+  expect(secondChild).toEqual("Result: Values found in the following row(s): ");
+  expect(thirdChild).toEqual("1, 2, 3, 4, 5");
 });
 
 test("search works when there are multiple matching rows", async ({ page }) => {
@@ -174,18 +177,53 @@ test("search works when there are multiple matching rows", async ({ page }) => {
     const history = document.querySelector(".repl-history");
     return history?.children[1]?.textContent;
   });
-  const thirdChild = await page.evaluate(() => {
+  expect(firstChild).toEqual("Result: Loaded file: income_by_race");
+  expect(secondChild).toEqual("Result: Values found in the following row(s): ");
+
+  const eleventhChild = await page.evaluate(() => {
     const history = document.querySelector(".repl-history");
     return history?.children[2]?.textContent;
   });
-  expect(firstChild).toEqual("Result: Loaded file: income_by_race");
-  expect(secondChild).toEqual(
-    "Result: Values found in the following row(s): RI, White, $1,058.47 , " +
-      "395773.6521, $1.00, 75%,RI, Black, $770.26 , 30424.80376, $0.73 , 6%," +
-      "RI, Native American/American Indian, $471.07 , 2315.505646, $0.45, 0%," +
-      "RI, Asian-Pacific Islander, $1,080.09, 18956.71657, $1.02, 4%," +
-      "RI, Hispanic/Latino, $673.14, 74596.18851, $0.64, 14%," +
-      "RI, Multiracial, $971.89, 8883.049171, $0.92, 2%"
+  expect(eleventhChild).toEqual(
+    "RI, White, $1,058.47, 395773.6521, $1.00, 75%"
+  );
+
+  const twelfthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[3]?.textContent;
+  });
+  expect(twelfthChild).toEqual("RI, Black, $770.26, 30424.80376, $0.73 , 6%");
+
+  const thirteenthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[4]?.textContent;
+  });
+  expect(thirteenthChild).toEqual(
+    "RI, Native American/American Indian, $471.07, 2315.505646, $0.45, 0%"
+  );
+
+  const fourteenthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[5]?.textContent;
+  });
+  expect(fourteenthChild).toEqual(
+    "RI, Asian-Pacific Islander, $1,080.09, 18956.71657, $1.02, 4%"
+  );
+
+  const fifthteenthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[6]?.textContent;
+  });
+  expect(fifthteenthChild).toEqual(
+    "RI, Hispanic/Latino, $673.14, 74596.18851, $0.64, 14%"
+  );
+
+  const sixteenthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[7]?.textContent;
+  });
+  expect(sixteenthChild).toEqual(
+    "RI, Multiracial, $971.89, 8883.049171, $0.92, 2%"
   );
 });
 
@@ -303,6 +341,43 @@ test("mode changes successfully and consecutively", async ({ page }) => {
   expect(thirdChild).toEqual("Result: Mode changed to brief");
 });
 
+test("both modes successfully display text with other commands", async ({
+  page,
+}) => {
+  await page.goto("http://localhost:8000/");
+  await page.getByLabel("Login").click();
+  await page.getByLabel("Command input").fill("load_file exampleCSV1");
+  await page.getByRole("button", { name: "Submitted 0 times" }).click();
+
+  const firstChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[0]?.textContent;
+  });
+  expect(firstChild).toEqual("Result: Loaded file: exampleCSV1");
+
+  await page.getByLabel("Command input").fill("mode");
+  await page.getByRole("button", { name: "Submitted 1 times" }).click();
+  const secondChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[1]?.textContent;
+  });
+
+  expect(secondChild).toEqual("Result: Mode changed to verbose");
+
+  await page.getByLabel("Command input").fill("load_file income_by_race");
+  await page.getByRole("button", { name: "Submitted 2 times" }).click();
+  const fourthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[2]?.textContent;
+  });
+  const fifthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[3]?.textContent;
+  });
+  expect(fourthChild).toEqual("load_file income_by_race");
+  expect(fifthChild).toEqual("Result: Loaded file: income_by_race");
+});
+
 test("boo is successfully added to the function map", async ({ page }) => {
   await page.goto("http://localhost:8000/");
   await page.getByLabel("Login").click();
@@ -314,4 +389,195 @@ test("boo is successfully added to the function map", async ({ page }) => {
     return history?.children[0]?.textContent;
   });
   expect(firstChild).toEqual("Result: boo");
+});
+
+test("compound commands: load_file view mode loadfile view mode search mode search", async ({
+  page,
+}) => {
+  await page.goto("http://localhost:8000/");
+  await page.getByLabel("Login").click();
+  await page.getByLabel("Command input").fill("load_file exampleCSV1");
+  await page.getByRole("button", { name: "Submitted 0 times" }).click();
+  await page.getByLabel("Command input").fill("view");
+  await page.getByRole("button", { name: "Submitted 1 times" }).click();
+  await page.getByLabel("Command input").fill("mode");
+  await page.getByRole("button", { name: "Submitted 2 times" }).click();
+  await page.getByLabel("Command input").fill("load_file income_by_race");
+  await page.getByRole("button", { name: "Submitted 3 times" }).click();
+  await page.getByLabel("Command input").fill("view");
+  await page.getByRole("button", { name: "Submitted 4 times" }).click();
+  await page.getByLabel("Command input").fill("mode");
+  await page.getByRole("button", { name: "Submitted 5 times" }).click();
+  await page.getByLabel("Command input").fill("search 2 $1,058.47");
+  await page.getByRole("button", { name: "Submitted 6 times" }).click();
+  await page.getByLabel("Command input").fill("mode");
+  await page.getByRole("button", { name: "Submitted 7 times" }).click();
+  await page.getByLabel("Command input").fill("search 2 $1,058.47");
+  await page.getByRole("button", { name: "Submitted 8 times" }).click();
+
+  const firstChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[0]?.textContent;
+  });
+  expect(firstChild).toEqual("Result: Loaded file: exampleCSV1");
+
+  const secondChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[1]?.textContent;
+  });
+  expect(secondChild).toEqual("Result: Currently viewing loaded CSV");
+
+  const thirdChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[2]?.textContent;
+  });
+  expect(thirdChild).toEqual("Row 1: 1, 2, 3, 4, 5");
+
+  const fourthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[3]?.textContent;
+  });
+  expect(fourthChild).toEqual("Row 2: The, song, remains, the, same.");
+
+  const fifthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[4]?.textContent;
+  });
+  expect(fifthChild).toEqual("Result: Mode changed to verbose");
+
+  const sixthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[5]?.textContent;
+  });
+  expect(sixthChild).toEqual("load_file income_by_race");
+
+  const seventhChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[6]?.textContent;
+  });
+  expect(seventhChild).toEqual("Result: Loaded file: income_by_race");
+
+  const eighthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[7]?.textContent;
+  });
+  expect(eighthChild).toEqual("view");
+
+  const ninthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[8]?.textContent;
+  });
+  expect(ninthChild).toEqual("Result: Currently viewing loaded CSV");
+
+  const tenthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[9]?.textContent;
+  });
+  expect(tenthChild).toEqual(
+    "Row 1: State, Data Type, Average Weekly Earnings, Number of Workers, Earnings Disparity, Employed Percent"
+  );
+
+  const eleventhChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[10]?.textContent;
+  });
+  expect(eleventhChild).toEqual(
+    "Row 2: RI, White, $1,058.47, 395773.6521, $1.00, 75%"
+  );
+
+  const twelfthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[11]?.textContent;
+  });
+  expect(twelfthChild).toEqual(
+    "Row 3: RI, Black, $770.26, 30424.80376, $0.73 , 6%"
+  );
+
+  const thirteenthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[12]?.textContent;
+  });
+  expect(thirteenthChild).toEqual(
+    "Row 4: RI, Native American/American Indian, $471.07, 2315.505646, $0.45, 0%"
+  );
+
+  const fourteenthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[13]?.textContent;
+  });
+  expect(fourteenthChild).toEqual(
+    "Row 5: RI, Asian-Pacific Islander, $1,080.09, 18956.71657, $1.02, 4%"
+  );
+
+  const fifthteenthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[14]?.textContent;
+  });
+  expect(fifthteenthChild).toEqual(
+    "Row 6: RI, Hispanic/Latino, $673.14, 74596.18851, $0.64, 14%"
+  );
+
+  const sixteenthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[15]?.textContent;
+  });
+  expect(sixteenthChild).toEqual(
+    "Row 7: RI, Multiracial, $971.89, 8883.049171, $0.92, 2%"
+  );
+
+  const seventeenthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[16]?.textContent;
+  });
+  expect(seventeenthChild).toEqual("mode");
+
+  const eighteenthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[17]?.textContent;
+  });
+  expect(eighteenthChild).toEqual("Result: Mode changed to brief");
+
+  const nineteenthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[18]?.textContent;
+  });
+  expect(nineteenthChild).toEqual(
+    "Result: Values found in the following row(s): "
+  );
+
+  const twentiethChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[19]?.textContent;
+  });
+  expect(twentiethChild).toEqual(
+    "RI, White, $1,058.47, 395773.6521, $1.00, 75%"
+  );
+
+  const twentifirstChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[20]?.textContent;
+  });
+  expect(twentifirstChild).toEqual("Result: Mode changed to verbose");
+
+  const twentysecondChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[21]?.textContent;
+  });
+  expect(twentysecondChild).toEqual("search 2 $1,058.47");
+
+  const twentyThirdChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[22]?.textContent;
+  });
+  expect(twentyThirdChild).toEqual(
+    "Result: Values found in the following row(s): "
+  );
+
+  const twentyFourthChild = await page.evaluate(() => {
+    const history = document.querySelector(".repl-history");
+    return history?.children[23]?.textContent;
+  });
+  expect(twentyFourthChild).toEqual(
+    "RI, White, $1,058.47, 395773.6521, $1.00, 75%"
+  );
 });

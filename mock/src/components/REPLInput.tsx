@@ -74,11 +74,9 @@ export function REPLInput(props: REPLInputProps) {
                 rowsWithValue.push(row.join(", "));
               }
             });
-            csvString = rowsWithValue;
             if (rowsWithValue.length != 0) {
-              resultString =
-                "Values found in the following row(s): " +
-                rowsWithValue.toString();
+              csvString = rowsWithValue;
+              resultString = "Values found in the following row(s): ";
             } else {
               resultString = "No values found with given parameters";
             }
@@ -147,7 +145,7 @@ export function REPLInput(props: REPLInputProps) {
           "invalid command: " + commandString,
         ]);
       } else {
-        if (commandString == "view" || commandString == "search") {
+        if (stringList[0] == "view" || stringList[0] == "search") {
           props.setHistory([
             ...props.history,
             "Result: " + resultString,
@@ -165,7 +163,7 @@ export function REPLInput(props: REPLInputProps) {
           "invalid command: " + commandString,
         ]);
       } else {
-        if (commandString == "view" || commandString == "search") {
+        if (stringList[0] == "view" || stringList[0] == "search") {
           props.setHistory([
             ...props.history,
             commandString,
