@@ -5,6 +5,7 @@
 Project Name: Mock
 Team Members: wcpark, jpeng29
 Estimated Time: 14 hours
+REPO: https://github.com/cs0320-s24/mock-wcpark-jpeng29.git
 
 # Design Choices
 
