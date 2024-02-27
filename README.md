@@ -23,11 +23,11 @@ Our testing suite is contained in App.spec.ts. We added tests for each command t
 
 # How to
 
-1. Run npm start
-2. Click on the link: http:localhost/8000
-3. Click Login
-4. Type commands into the command input
-5. Click submit to see the result displayed
+1. Run npm start.
+2. Click on the link: http:localhost/8000.
+3. Click Login.
+4. Type commands into the command input.
+5. Click submit to see the result displayed.
 
 # Collaboration
 
